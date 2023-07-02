@@ -18,7 +18,7 @@ DRIVER=kvm2
 minikube config set memory 8g
 minikube config set cpus 8
 minikube delete
-minikube start --driver=${DRIVER} --kubernetes-version=v1.26.6 --cni calico --extra-config=kubelet.housekeeping-interval=10s
+minikube start --driver=${DRIVER} --kubernetes-version=v1.26.6 --cni calico --extra-config=kubelet.housekeeping-interval=10s --static-ip=192.168.200.200
 minikube addons enable metallb
 
 MINIKUBE_IP=$(minikube ip)
