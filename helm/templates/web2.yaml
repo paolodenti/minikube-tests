@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: web2-deployment
+    namespace: {{.Values.namespace}}
+    labels:
+        app: web2
+spec:
+    replicas: {{.Values.web2.replicaCount}}
+    selector:
+        matchLabels:
+            app: web2
+    template:
+        metadata:
+            labels:
+                app: web2
+        spec:
+            containers:
+                - name: web2
+                  image: bithavoc/hello-world-env
+                  resources:
+                      requests:
+                          cpu: {{.Values.web2.resources.requests.cpu}}
+                          memory: {{.Values.web2.resources.requests.memory}}
+                      limits:
+                          cpu: {{.Values.web2.resources.limits.cpu}}
+                          memory: {{.Values.web2.resources.limits.memory}}
+                  ports:
+                      - containerPort: 3000
+                  env:
+                      - name: DB_USERNAME
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: db-username
+                      - name: DB_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: db-password
+                      - name: MESSAGE
+                        value: "db username: $(DB_USERNAME) - db password: $(DB_PASSWORD)"
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: web2-service
+    namespace: {{.Values.namespace}}
+spec:
+    selector:
+        app: web2
+    type: ClusterIP
+    ports:
+        - protocol: TCP
+          port: 8080
+          targetPort: 3000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+    name: web2-deployment
+    namespace: {{.Values.namespace}}
+spec:
+    minReplicas: {{.Values.web2.autoscaling.minReplicas}}
+    maxReplicas: {{.Values.web2.autoscaling.minReplicas}}
+    scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: web2-deployment
+    metrics:
+        - type: Resource
+          resource:
+              name: cpu
+              target:
+                  type: Utilization
+                  averageUtilization: {{.Values.web2.autoscaling.averageUtilization}}

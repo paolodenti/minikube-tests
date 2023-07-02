@@ -1,0 +1,20 @@
+namespace: example
+
+pvcSize: "2Gi"
+
+web2:
+    replicaCount: 3
+    resources:
+        requests:
+            cpu: "250m"
+            memory: "256Mi"
+        limits:
+            cpu: "500m"
+            memory: "512Mi"
+    autoscaling:
+        minReplicas: 2
+        maxnReplicas: 5
+        averageUtilization: 50
+
+postgres:
+    db: example_db
